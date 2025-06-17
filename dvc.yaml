@@ -1,0 +1,25 @@
+stages:
+  preprocess:
+    cmd: python src/preprocess.py
+    deps:
+    - src/preprocess.py
+    outs:
+    - ${preprocess.prep_fn}
+  filter:
+    cmd: python src/filter.py
+    deps:
+    - ${preprocess.prep_fn}
+    - src/filter.py
+    outs:
+    - ${filter.filt_fn}
+  stat_feat_gen:
+    cmd: python src/stat_feat_gen.py
+    deps:
+    - ${filter.filt_fn}
+    - src/stat_feat_gen.py
+    - src/funcs.py
+    params:
+    - stat_feat_gen.min_fights_num
+    outs:
+    - ${stat_feat_gen.feat_fn}
+  

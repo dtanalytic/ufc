@@ -1,0 +1,10 @@
+
+preprocess:
+    source_fn: data/external/items.csv
+    prep_fn: data/interim/prep_df.csv
+filter:
+    filt_fn: data/interim/filt_df.csv
+stat_feat_gen:
+    min_fights_num: 3
+    feat_fn: data/interim/feat_df.csv
+seed: 0
