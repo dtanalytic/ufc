@@ -95,7 +95,7 @@ def main():
     df_all = insert_strikes_cols(df_all, 'Clinch_d', 'str_cl_dam')
 
     df_all = insert_strikes_cols(df_all, 'Ground', 'str_gr')
-    df_all = insert_strikes_cols(df_all, 'Ground_d', 'str_gr_dam')
+    df_all = isert_strikes_cols(df_all, 'Ground_d', 'str_gr_dam')
 
     df_all = insert_strikes_cols(df_all, 'Td', 'td')
     df_all = insert_strikes_cols(df_all, 'Td_d', 'td_dam')
