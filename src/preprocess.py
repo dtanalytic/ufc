@@ -75,71 +75,30 @@ def main():
     #already float cols
     df_all.rename(columns={'KD':'kd_stat', 'Rev.':'rev_stat', 'Sub. att':'sub_att_stat', 
                            'KD_d':'kd_dam_stat', 'Rev._d':'rev_dam_stat', 'Sub. att_d':'sub_att_dam_stat'}, inplace=True)
-    
-    df_all['sig_str_stat'] = df_all['Sig. str'].str.extract(r'(\d+)\sof', expand=False)
-    df_all['sig_str_stat'] = df_all['sig_str_stat'].astype(float)
 
-    df_all['sig_str_dam_stat'] = df_all['Sig. str_d'].str.extract(r'(\d+)\sof', expand=False)
-    df_all['sig_str_dam_stat'] = df_all['sig_str_dam_stat'].astype(float)
+    df_all = insert_strikes_cols(df_all, 'Sig. str', 'str')
+    df_all = insert_strikes_cols(df_all, 'Sig. str_d', 'str_dam')
 
-    
-    df_all['sig_str_h_stat'] = df_all['Head'].str.extract(r'(\d+)\sof', expand=False)
-    df_all['sig_str_h_stat'] = df_all['sig_str_h_stat'].astype(float)
+    df_all = insert_strikes_cols(df_all, 'Head', 'str_h')
+    df_all = insert_strikes_cols(df_all, 'Head_d', 'str_h_dam')
 
-    
-    
-    df_all['sig_str_h_dam_stat'] = df_all['Head_d'].str.extract(r'(\d+)\sof', expand=False)
-    df_all['sig_str_h_dam_stat'] = df_all['sig_str_h_dam_stat'].astype(float)
+    df_all = insert_strikes_cols(df_all, 'Leg', 'str_l')
+    df_all = insert_strikes_cols(df_all, 'Leg_d', 'str_l_dam')
 
-    df_all['sig_str_h_dam_of_all_stat'] = df_all['Head_d'].str.extract(r'of\s(\d+)', expand=False)
-    df_all['sig_str_h_dam_of_all_stat'] = df_all['sig_str_h_dam_of_all_stat'].astype(float)
-    
-    df_all['sig_str_h_dam_perc_stat'] = df_all['sig_str_h_dam_stat']/df_all['sig_str_h_dam_of_all_stat']
+    df_all = insert_strikes_cols(df_all, 'Body', 'str_b')
+    df_all = insert_strikes_cols(df_all, 'Body_d', 'str_b_dam')
 
+    df_all = insert_strikes_cols(df_all, 'Distance', 'str_d')
+    df_all = insert_strikes_cols(df_all, 'Distance_d', 'str_d_dam')
+    
+    df_all = insert_strikes_cols(df_all, 'Clinch', 'str_cl')
+    df_all = insert_strikes_cols(df_all, 'Clinch_d', 'str_cl_dam')
 
-    
-    df_all['sig_str_l_stat'] = df_all['Leg'].str.extract(r'(\d+)\sof', expand=False)
-    df_all['sig_str_l_stat'] = df_all['sig_str_l_stat'].astype(float)
+    df_all = insert_strikes_cols(df_all, 'Ground', 'str_gr')
+    df_all = isert_strikes_cols(df_all, 'Ground_d', 'str_gr_dam')
 
-    df_all['sig_str_l_of_all_stat'] = df_all['Leg'].str.extract(r'of\s(\d+)', expand=False)
-    df_all['sig_str_l_of_all_stat'] = df_all['sig_str_l_of_all_stat'].astype(float)
-    
-    df_all['sig_str_l_perc_stat'] = df_all['sig_str_l_stat']/df_all['sig_str_l_of_all_stat']
-
-    
-    
-    df_all['sig_str_l_dam_stat'] = df_all['Leg_d'].str.extract(r'(\d+)\sof', expand=False)
-    df_all['sig_str_l_dam_stat'] = df_all['sig_str_l_dam_stat'].astype(float)
-    
-    df_all['sig_str_b_stat'] = df_all['Body'].str.extract(r'(\d+)\sof', expand=False)
-    df_all['sig_str_b_stat'] = df_all['sig_str_b_stat'].astype(float)
-    
-    df_all['sig_str_b_dam_stat'] = df_all['Body_d'].str.extract(r'(\d+)\sof', expand=False)
-    df_all['sig_str_b_dam_stat'] = df_all['sig_str_b_dam_stat'].astype(float)
-    
-    df_all['sig_str_d_stat'] = df_all['Distance'].str.extract(r'(\d+)\sof', expand=False)
-    df_all['sig_str_d_stat'] = df_all['sig_str_d_stat'].astype(float)
-    
-    df_all['sig_str_d_dam_stat'] = df_all['Distance_d'].str.extract(r'(\d+)\sof', expand=False)
-    df_all['sig_str_d_dam_stat'] = df_all['sig_str_d_dam_stat'].astype(float)
-    
-    df_all['sig_str_cl_stat'] = df_all['Clinch'].str.extract(r'(\d+)\sof', expand=False)
-    df_all['sig_str_cl_stat'] = df_all['sig_str_cl_stat'].astype(float)
-    
-    df_all['sig_str_cl_dam_stat'] = df_all['Clinch_d'].str.extract(r'(\d+)\sof', expand=False)
-    df_all['sig_str_cl_dam_stat'] = df_all['sig_str_cl_dam_stat'].astype(float)
-    
-    df_all['sig_str_gr_stat'] = df_all['Ground'].str.extract(r'(\d+)\sof', expand=False)
-    df_all['sig_str_gr_stat'] = df_all['sig_str_gr_stat'].astype(float)
-    
-    df_all['sig_str_gr_dam_stat'] = df_all['Ground_d'].str.extract(r'(\d+)\sof', expand=False)
-    df_all['sig_str_gr_dam_stat'] = df_all['sig_str_gr_dam_stat'].astype(float)
-    
-    df_all['td_stat'] = df_all['Td'].str.extract(r'(\d+)\sof', expand=False)
-    df_all['td_stat'] = df_all['td_stat'].astype(float)
-    
-    df_all['td_dam_stat'] = df_all['Td_d'].str.extract(r'(\d+)\sof', expand=False)
-    df_all['td_dam_stat'] = df_all['td_dam_stat'].astype(float)
+    df_all = insert_strikes_cols(df_all, 'Td', 'td')
+    df_all = insert_strikes_cols(df_all, 'Td_d', 'td_dam')
 
 
     # ctrl_stat, time_stat in minutes
