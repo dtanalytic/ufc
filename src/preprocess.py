@@ -28,7 +28,7 @@ def insert_strikes_cols(df_in, colnm, suf):
     df[f'sig_{suf}_of_all_stat'] = df[colnm].str.extract(r'of\s(\d+)', expand=False)
     df[f'sig_{suf}_of_all_stat'] = df[f'sig_{suf}_of_all_stat'].astype(float)
     
-    df[f'sig_{suf}_perc_stat'] = df[f'sig_{suf}_stat']/df[f'sig_{suf}_of_all_stat']
+    df[f'sig_{suf}_perc_stat'] = np.where(df[f'sig_{suf}_of_all_stat']!=0, df[f'sig_{suf}_stat']/df[f'sig_{suf}_of_all_stat'], 0)
 
     return df
 
@@ -95,7 +95,7 @@ def main():
     df_all = insert_strikes_cols(df_all, 'Clinch_d', 'str_cl_dam')
 
     df_all = insert_strikes_cols(df_all, 'Ground', 'str_gr')
-    df_all = isert_strikes_cols(df_all, 'Ground_d', 'str_gr_dam')
+    df_all = insert_strikes_cols(df_all, 'Ground_d', 'str_gr_dam')
 
     df_all = insert_strikes_cols(df_all, 'Td', 'td')
     df_all = insert_strikes_cols(df_all, 'Td_d', 'td_dam')
@@ -139,8 +139,43 @@ def main():
     df_all['dec_w_stat' ] = ((df_all['method_type']=='decision') &(df_all['win_stat'])).astype(np.int8)
     df_all['dec_l_stat' ] = ((df_all['method_type']=='decision') &(df_all['lose_stat'])).astype(np.int8)
 
-
     df_all.to_csv(conf['preprocess']['prep_fn'], index=False)
+
+
+    # коэффициенты
+    coef_df = pd.read_excel(conf['preprocess']['source_coef_fn'])
+    
+    # чистка на наличие сущностей
+    coef_df = coef_df[coef_df.fighter2.notna() & coef_df.fighter1.notna() & coef_df.coef1.notna() & coef_df.coef2.notna()]
+    coef_df = coef_df[(coef_df.coef1!=0) & (coef_df.coef2!=0)]
+    
+    coef_df = coef_df.reset_index(drop=True)
+    
+    coef_df = coef_df.assign(fighters = coef_df.apply(lambda x: ' '.join(sorted([x['fighter1'], x['fighter2']])) , axis=1))\
+                    .assign(event_day=lambda x:pd.to_datetime(x['date'], format='%d.%m.%Y'))
+    
+    # keep=last последние по порядку не помечаются как дубли и сохраняются в итоге (пример - .loc[lambda x: x['fighters']=='Дастин Порье Макс Холлоуэй'])
+    duples_idx = coef_df[coef_df.fighters.duplicated(keep='last')].sort_values(by='fighters').index
+    fighers_close_idx = coef_df.sort_values(by='fighters').groupby('fighters').apply(lambda x: np.min(np.abs(np.diff([-100]+x.index.tolist())))).loc[lambda x: x<50].index
+    # тут и дубли по участикам и не далеко от друг друга
+    dupl_df = coef_df[(coef_df.index.isin(duples_idx)) & (coef_df.fighters.isin(fighers_close_idx))].sort_values(by='fighters')
+    
+    dupl_alt_idx1 = coef_df[coef_df.duplicated(subset=['fighter1', 'fighter2', 'coef1', 'coef2'], keep='last')].index
+    dupl_alt_idx2 = coef_df[coef_df.duplicated(subset=['fighter1', 'fighter2', 'event_day'], keep='last')].index
+    
+    # когда коэффициенты прям равны, это одни и те же бои (с очень близкой датой)
+    coef_df = coef_df[~((coef_df.index.isin(dupl_alt_idx1))&(coef_df.index.isin(dupl_df.index)))]
+    # когда одинаковая дата события (или nan) и участники одни, бои почти всегда рядом, их можно считать дублями 
+    coef_df = coef_df[~((coef_df.index.isin(dupl_alt_idx2))&(coef_df.index.isin(dupl_df.index)))]
+    
+    # тут бои с одной датой nan и не близкие, но переносы (кроме Долидзе) 
+    coef_df = coef_df[~((coef_df.index.isin(dupl_alt_idx2))&(~coef_df.index.isin(dupl_df.index) & (coef_df['fighters']!='Марвин Веттори Роман Долидзе')))]
+    # убираем остаток от 2 критериев дублей, которые не залетают в dupl_df
+    coef_df = coef_df[~((~coef_df.index.isin(dupl_alt_idx1))&(~coef_df.index.isin(dupl_alt_idx2))&(coef_df.index.isin(dupl_df.index)))]
+
+    coef_df['susp'] = 0
+    coef_df.loc[coef_df['name'].isin(["UFC Fight Night: Усман - Бакли", "UFC Fight Night: Хилл - Раунтри"]), 'susp'] = 1
+    coef_df.to_csv(conf['preprocess']['prep_coef_fn'], index=False)
 
 if __name__=='__main__':
         

@@ -3,12 +3,16 @@ stages:
     cmd: python src/preprocess.py
     deps:
     - src/preprocess.py
+    - ${preprocess.source_fn}
+    - ${preprocess.source_coef_fn}
     outs:
     - ${preprocess.prep_fn}
+    - ${preprocess.prep_coef_fn}
   filter:
     cmd: python src/filter.py
     deps:
     - ${preprocess.prep_fn}
+    - ${preprocess.prep_coef_fn}
     - src/filter.py
     outs:
     - ${filter.filt_fn}
@@ -20,6 +24,24 @@ stages:
     - src/funcs.py
     params:
     - stat_feat_gen.min_fights_num
+    - stat_feat_gen.rol_window_size
+    - stat_feat_gen.aggs
+    - stat_feat_gen.cust_aggs
     outs:
     - ${stat_feat_gen.feat_fn}
+  split_data:
+    cmd: python src/split_data.py
+    params:
+    - train_eval.quantile_clip  
+  feat_longlist_sel:
+    cmd: python src/feat_longlist_sel.py
+  feat_shortlist_sel:
+    cmd: python src/feat_shortlist_sel.py
+  train_eval:
+    cmd: python src/train_eval.py
+    deps:
+    - ${stat_feat_gen.feat_fn}
+    - src/train_eval.py
+    params:
+    - seed
   

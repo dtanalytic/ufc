@@ -28,6 +28,22 @@ class PrepTest(unittest.TestCase):
         self.assertEqual(self.prep_df.loc[self.prep_df.Fighter=='Conor McGregor', 'KO_l_stat'].sum(), 2)
         self.assertEqual(self.prep_df.loc[self.prep_df.Fighter=='Conor McGregor', 'wrest_l_stat'].sum(), 2)
 
+    def test_several_stats(self):
+        
+        # нокдаун показатель в бою Конора и Альдо
+        self.assertTrue(self.prep_df.loc[(self.prep_df.Fighter=='Conor McGregor') & (self.prep_df.Opponent=='Jose Aldo'), 'kd_stat'].iloc[0].round(2)==4.62)
+        # нокдаун показатель в бою Масвидаля
+        self.assertTrue(self.prep_df.loc[self.prep_df.kd_stat>10, 'Fighter'].iloc[0] == 'Jorge Masvidal')
+
+        # быстрый сабмишн у Тактарова
+        self.assertTrue(self.prep_df.loc[self.prep_df.sub_att_stat>6, 'sub_att_stat'].iloc[0].round(2)==6.67)
+        
+        # Joshua Van - среднее количество значимых ударов за минуту соответствует
+        self.assertTrue(self.prep_df.loc[(self.prep_df.Fighter=='Joshua Van') & (self.prep_df.event_date<='2025-03-08'), 'sig_str_stat'].mean().round(2)==8.06)
+
+        self.assertTrue(self.prep_df.loc[self.prep_df.sig_str_gr_perc_stat>10, 'sig_str_gr_perc_stat'].iloc[0]==12)
+
+    
     def test_strikes(self):
 
         # sig_str_stat

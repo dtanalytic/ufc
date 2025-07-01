@@ -1,10 +1,16 @@
-
 preprocess:
     source_fn: data/external/items.csv
+    source_coef_fn: data/external/coefs.xlsx
     prep_fn: data/interim/prep_df.csv
+    prep_coef_fn: data/interim/prep_coef_df.csv
 filter:
     filt_fn: data/interim/filt_df.csv
 stat_feat_gen:
     min_fights_num: 3
-    feat_fn: data/interim/feat_df.csv
+    rol_window_size: 3
+    aggs: "['sum']" # "['sum', 'mean', 'max', 'min', 'std']"
+    cust_aggs: "[('max_min_d', lambda x: x.max()-x.min())]" # "[('max_min_d', lambda x: x.max()-x.min())] + [(f'q_{l:.1f}', lambda x, l=l: x.quantile(l)) for l in np.arange(0.1, 1,0.5)]"
+    feat_fn: data/interim/stat_df.csv
+split_data:
+    quantile_clip: 0.001 # sum percents from lower and upper clip
 seed: 0
