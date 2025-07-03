@@ -29,10 +29,20 @@ stages:
     - stat_feat_gen.cust_aggs
     outs:
     - ${stat_feat_gen.feat_fn}
+  fights_feat_gen:
+    cmd: python src/fights_feat_gen.py
+    deps:
+    - ${stat_feat_gen.feat_fn}
+    - src/fights_feat_gen.py
+    outs:
+    - ${fights_feat_gen.feat_fn}
   split_data:
     cmd: python src/split_data.py
+    deps:
+    - src/split_data.py
+    - ${fights_feat_gen.feat_fn}
     params:
-    - train_eval.quantile_clip  
+    - split_data.quantile_clip  
   feat_longlist_sel:
     cmd: python src/feat_longlist_sel.py
   feat_shortlist_sel:
