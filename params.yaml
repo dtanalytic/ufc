@@ -19,6 +19,10 @@ split_data:
     feat_full_fn: data/interim/feat_full_df.csv
     feat_anom_fn: data/interim/feat_anom_df.csv
 feat_longlist_sel:
+    method: 'phik' # 'phik'
+    thresh: 0.07 # if empty saves
+    topn_feats: 30 # if is not empty thresh is not used
+    sign_feat_long_fn: data/interim/sign_feat_long_fn.csv
     feat_long_fn: data/interim/feat_long_df.csv
 feat_shortlist_sel:
     feat_short_fn: data/interim/feat_short_df.csv
