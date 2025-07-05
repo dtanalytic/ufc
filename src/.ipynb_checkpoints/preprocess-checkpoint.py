@@ -76,7 +76,7 @@ def main():
         df_add = df_add.rename(columns={'Fighter_right':'Fighter', 'Fighter_left':'Opponent', 'Win_lose_right':'Result'}).drop('Win_lose_left', axis=1)
         df_add.columns = suf_change(df_add.columns, suf_out='_r', suf_dam = '_l')
         
-        df_all = pd.concat([df,df_add], ignore_index=True)
+        df_all = pd.concat([df.assign(left_corner_stat=1),df_add.assign(left_corner_stat=0)], ignore_index=True)
     
         del df, df_add
     
@@ -126,7 +126,7 @@ def main():
         df_all['time'] = (df_all['Round:']-1)*5 + df_all['Time:'].str.split(':').map(lambda x: int(x[0])+int(x[1])/60)
         
         # normalise stat cols stat to minutes 
-        stat_cols = [it for it in df_all.columns if re.search('_stat', it)]
+        stat_cols = [it for it in df_all.columns if re.search('_stat', it) and not 'left_corner_stat' in it]
         for col in stat_cols:
             df_all[col] = df_all[col]/df_all['time']
         

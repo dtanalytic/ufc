@@ -15,4 +15,12 @@ fights_feat_gen:
     feat_fn: data/interim/feat_df.csv
 split_data:
     quantile_clip: 0.001 # sum percents from lower and upper clip
+    train_prop: 0.7
+    feat_full_fn: data/interim/feat_full_df.csv
+    feat_anom_fn: data/interim/feat_anom_df.csv
+feat_longlist_sel:
+    feat_long_fn: data/interim/feat_long_df.csv
+feat_shortlist_sel:
+    feat_short_fn: data/interim/feat_short_df.csv
+
 seed: 0

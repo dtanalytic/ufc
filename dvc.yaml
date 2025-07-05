@@ -43,14 +43,28 @@ stages:
     - ${fights_feat_gen.feat_fn}
     params:
     - split_data.quantile_clip  
+    - split_data.train_prop
+    outs:
+    - ${split_data.feat_full_fn}
+    - ${split_data.feat_anom_fn}
   feat_longlist_sel:
     cmd: python src/feat_longlist_sel.py
+    deps:
+    - ${split_data.feat_full_fn}
+    - src/feat_longlist_sel.py
+    outs:
+    - ${feat_longlist_sel.feat_long_fn}
   feat_shortlist_sel:
     cmd: python src/feat_shortlist_sel.py
+    deps:
+    - ${feat_longlist_sel.feat_long_fn}
+    - src/feat_shortlist_sel.py
+    outs:
+    - ${feat_shortlist_sel.feat_short_fn}
   train_eval:
     cmd: python src/train_eval.py
     deps:
-    - ${stat_feat_gen.feat_fn}
+    - ${feat_shortlist_sel.feat_short_fn}
     - src/train_eval.py
     params:
     - seed

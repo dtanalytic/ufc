@@ -39,7 +39,7 @@ def main():
 
         feat_df = stat_df.merge(res.reset_index(), on = ['Fighter','Opponent','Date'], suffixes=['','_sub'])
 
-        feat_df = feat_df[['event_date', 'Fighter', 'Opponent', 'Result']+[it for it in feat_df.columns if '_sub' in it]]
+        feat_df = feat_df[['event_date', 'Fighter', 'Opponent', 'Result', 'left_corner_stat']+[it for it in feat_df.columns if '_sub' in it]]
         
         feat_df.columns = [it.lower() for it in feat_df.columns]
         
@@ -51,7 +51,7 @@ def main():
         
 
         feat_df = feat_df.drop_duplicates(subset=['fighters', 'event_date'])
-        feat_df = feat_df[['fighter', 'opponent', 'event_date', 'target']+[it for it in feat_df.columns if '_sub' in it]]
+        feat_df = feat_df[['fighter', 'opponent', 'event_date', 'target', 'left_corner_stat']+[it for it in feat_df.columns if '_sub' in it]]
 
         feat_df.reset_index(drop=True).to_csv(conf['fights_feat_gen']['feat_fn'], index=False)
         logger.info(f'Закончили создание таблицы боев')
