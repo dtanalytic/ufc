@@ -1,6 +1,7 @@
 preprocess:
     source_fn: data/external/items.csv
     source_coef_fn: data/external/coefs.xlsx
+    source_fighters_fn: data/external/fighters_stat_df.csv
     prep_fn: data/interim/prep_df.csv
     prep_coef_fn: data/interim/prep_coef_df.csv
 filter:
@@ -25,6 +26,13 @@ feat_longlist_sel:
     sign_feat_long_fn: data/interim/sign_feat_long_fn.csv
     feat_long_fn: data/interim/feat_long_df.csv
 feat_shortlist_sel:
+    method: 'bfs' # 'bfs'
+    thresh: 0.005
     feat_short_fn: data/interim/feat_short_df.csv
-
+inference:
+    fighters_fn: data/inference/fighters_stat_df.csv
+    rankings_fn: data/inference/rank_df.csv
+    fights_fn: data/inference/items.csv
+    coef_fn: data/inference/coefs.xlsx
+    vocab_fn: data/inference/vocab.csv
 seed: 0

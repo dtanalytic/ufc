@@ -34,16 +34,17 @@ def main():
         
         df = pd.read_csv(conf['filter']['filt_fn'])
         
-        df.sort_values(by=['Fighter', 'Date'], inplace=True)
-        stat_cols = [it for it in df.columns if re.search('_stat', it)]
-    
+        df.sort_values(by=['Fighter', 'event_date'], inplace=True)
+        # stat_cols = [it for it in df.columns if re.search('_stat', it)]
+        stat_cols = [it for it in fights_df.columns if re.search('_stat', it) and all([not col in it for col in ['dob_stat', 'height_stat', 'reach_stat']])]
+
         # aggs = ['sum', 'mean', 'max', 'min', 'std']
         # cust_aggs = [('max_min_d', lambda x: x.max()-x.min())] + [(f'q_{l:.1f}', lambda x, l=l: x.quantile(l)) for l in np.arange(0.1, 1,0.5)]
-    
         aggs = eval(conf['stat_feat_gen']['aggs'])
         cust_aggs = eval(conf['stat_feat_gen']['cust_aggs'])
-        fighters_chunks = list(chunked(df['Fighter'].unique(), n_chunks=os.cpu_count()))
+
         
+        fighters_chunks = list(chunked(df['Fighter'].unique(), n_chunks=os.cpu_count()))
         for i in range(len(fighters_chunks)):
             df.loc[df.Fighter.isin(fighters_chunks[i]), 'chunk'] = i
     

@@ -3,8 +3,10 @@ stages:
     cmd: python src/preprocess.py
     deps:
     - src/preprocess.py
+    - src/prep_funcs.py
     - ${preprocess.source_fn}
     - ${preprocess.source_coef_fn}
+    - ${preprocess.source_fighters_fn}
     outs:
     - ${preprocess.prep_fn}
     - ${preprocess.prep_coef_fn}
