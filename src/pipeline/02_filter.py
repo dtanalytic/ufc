@@ -18,13 +18,16 @@ def main():
         logger = ActivityLogger().get_logger(__file__)
         conf = YAML().load(open('params.yaml'))
         
-        df = pd.read_csv(conf['preprocess']['prep_fn'])
+        df = pd.read_csv(conf['preprocess']['prep_fights_fn'])
         df = df[df['Sig. str'].notnull()]
         
         # drop fighters duples, есть еще Phil Hawes
         df = df[(df['Fighter']!='Phillip Hawes') & (df['Opponent']!='Phillip Hawes')]
-        
-        df.to_csv(conf['filter']['filt_fn'], index=False)
+        fighters_duples = ['Bruno Silva', 'Jean Silva', 'Joey Gomez', 'Michael McDonald', 'Mike Davis']
+
+        df = df[~(df.Fighter.isin(fighters_duples) | df.Opponent.isin(fighters_duples))]
+
+        df.to_csv(conf['filter']['filt_fights_fn'], index=False)
 
         logger.info(f'Закончили фильтрацию стат файла')
 

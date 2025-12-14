@@ -1,11 +1,12 @@
 preprocess:
-    source_fn: data/external/items.csv
+    source_fights_fn: data/external/items.csv
     source_coef_fn: data/external/coefs.xlsx
     source_fighters_fn: data/external/fighters_stat_df.csv
-    prep_fn: data/interim/prep_df.csv
+    prep_fights_fn: data/interim/prep_fights_df.csv
+    prep_fighters_fn: data/interim/prep_fighters_df.csv
     prep_coef_fn: data/interim/prep_coef_df.csv
 filter:
-    filt_fn: data/interim/filt_df.csv
+    filt_fights_fn: data/interim/filt_df.csv
 stat_feat_gen:
     min_fights_num: 3
     rol_window_size: 3
@@ -15,24 +16,39 @@ stat_feat_gen:
 fights_feat_gen:
     feat_fn: data/interim/feat_df.csv
 split_data:
-    quantile_clip: 0.001 # sum percents from lower and upper clip
     train_prop: 0.7
+    ohe_fn: data/interim/ohe.pkl
     feat_full_fn: data/interim/feat_full_df.csv
-    feat_anom_fn: data/interim/feat_anom_df.csv
 feat_longlist_sel:
     method: 'phik' # 'phik'
     thresh: 0.07 # if empty saves
     topn_feats: 30 # if is not empty thresh is not used
-    sign_feat_long_fn: data/interim/sign_feat_long_fn.csv
+    sign_feat_long_all_fn: data/interim/sign_feat_long_all.csv 
+    sign_feat_long_fn: data/interim/sign_feat_long.pkl
     feat_long_fn: data/interim/feat_long_df.csv
 feat_shortlist_sel:
-    method: 'bfs' # 'bfs'
-    thresh: 0.005
+    method: 's' # 'b', 'f', 's'
+    thresh: 0.01
+    quantile_clip: 0.001 # sum percents from lower and upper clip
+    sign_feat_short_all_fn: data/interim/sign_feat_short_all.csv
+    sign_feat_short_fn: data/interim/sign_feat_short.pkl
+    feat_anom_fn: data/interim/feat_anom_df.csv
     feat_short_fn: data/interim/feat_short_df.csv
+train_eval:
+    model: logreg # dummy logreg
+    model_fn: data/out/model.pkl
+    report_dn: data/out/report
+    eval_fn: data/out/report/eval_m.json
+    score_df_fn: data/out/score_df.csv
+calc_report:
+    report_metrics_fn: data/out/report/report_m.json
+    alpha: 1
 inference:
     fighters_fn: data/inference/fighters_stat_df.csv
     rankings_fn: data/inference/rank_df.csv
+    rankings_big_fn: data/inference/rank_big_df.csv
     fights_fn: data/inference/items.csv
     coef_fn: data/inference/coefs.xlsx
     vocab_fn: data/inference/vocab.csv
+    llm_coef_fn: data/inference/llm_coefs.csv
 seed: 0

@@ -1,29 +1,31 @@
 stages:
   preprocess:
-    cmd: python src/preprocess.py
+    cmd: python src/pipeline/01_prep.py
     deps:
-    - src/preprocess.py
+    - src/pipeline/01_prep.py
     - src/prep_funcs.py
-    - ${preprocess.source_fn}
+    - ${preprocess.source_fights_fn}
     - ${preprocess.source_coef_fn}
     - ${preprocess.source_fighters_fn}
     outs:
-    - ${preprocess.prep_fn}
+    - ${preprocess.prep_fights_fn}
+    - ${preprocess.prep_fighters_fn}
     - ${preprocess.prep_coef_fn}
   filter:
-    cmd: python src/filter.py
+    cmd: python src/pipeline/02_filter.py
     deps:
-    - ${preprocess.prep_fn}
+    - ${preprocess.prep_fights_fn}
+    - ${preprocess.prep_fighters_fn}
     - ${preprocess.prep_coef_fn}
-    - src/filter.py
+    - src/pipeline/02_filter.py
     outs:
-    - ${filter.filt_fn}
+    - ${filter.filt_fights_fn}
   stat_feat_gen:
-    cmd: python src/stat_feat_gen.py
+    cmd: python src/pipeline/03_stat_feat_gen.py
     deps:
-    - ${filter.filt_fn}
-    - src/stat_feat_gen.py
-    - src/funcs.py
+    - ${filter.filt_fights_fn}
+    - src/pipeline/03_stat_feat_gen.py
+    - src/stat_funcs.py
     params:
     - stat_feat_gen.min_fights_num
     - stat_feat_gen.rol_window_size
@@ -32,47 +34,67 @@ stages:
     outs:
     - ${stat_feat_gen.feat_fn}
   fights_feat_gen:
-    cmd: python src/fights_feat_gen.py
+    cmd: python src/pipeline/04_fights_feat_gen.py
     deps:
     - ${stat_feat_gen.feat_fn}
-    - src/fights_feat_gen.py
+    - src/pipeline/04_fights_feat_gen.py
     outs:
     - ${fights_feat_gen.feat_fn}
   split_data:
-    cmd: python src/split_data.py
+    cmd: python src/pipeline/05_split_data.py
     deps:
-    - src/split_data.py
+    - src/pipeline/05_split_data.py
     - ${fights_feat_gen.feat_fn}
-    params:
-    - split_data.quantile_clip  
+    params:  
     - split_data.train_prop
+    - split_data.ohe_fn
     outs:
     - ${split_data.feat_full_fn}
-    - ${split_data.feat_anom_fn}
   feat_longlist_sel:
-    cmd: python src/feat_longlist_sel.py
+    cmd: python src/pipeline/06_feat_longlist_sel.py
     params:
     - feat_longlist_sel.method
     - feat_longlist_sel.thresh
     - feat_longlist_sel.topn_feats
     deps:
     - ${split_data.feat_full_fn}
-    - src/feat_longlist_sel.py
+    - src/pipeline/06_feat_longlist_sel.py
     outs:
     - ${feat_longlist_sel.feat_long_fn}
+    - ${feat_longlist_sel.sign_feat_long_all_fn}
     - ${feat_longlist_sel.sign_feat_long_fn}
   feat_shortlist_sel:
-    cmd: python src/feat_shortlist_sel.py
+    cmd: python src/pipeline/07_feat_shortlist_sel.py
+    params:
+    - feat_shortlist_sel.quantile_clip
     deps:
     - ${feat_longlist_sel.feat_long_fn}
-    - src/feat_shortlist_sel.py
+    - src/pipeline/07_feat_shortlist_sel.py
     outs:
+    - ${feat_shortlist_sel.sign_feat_short_all_fn}
+    - ${feat_shortlist_sel.sign_feat_short_fn}
+    - ${feat_shortlist_sel.feat_anom_fn}
     - ${feat_shortlist_sel.feat_short_fn}
   train_eval:
-    cmd: python src/train_eval.py
+    cmd: python src/pipeline/08_train_eval.py
+    params:
+    - train_eval.model
+    - seed
     deps:
     - ${feat_shortlist_sel.feat_short_fn}
-    - src/train_eval.py
+    - src/pipeline/08_train_eval.py
+    outs:
+    - ${train_eval.model_fn}
+    - ${train_eval.score_df_fn}
+    metrics:
+    - ${train_eval.eval_fn}
+  calc_report:
+    cmd: python src/pipeline/09_calc_report.py
     params:
-    - seed
-  
+    - calc_report.alpha
+    deps:
+    - ${train_eval.model_fn}
+    - src/pipeline/09_calc_report.py
+    metrics:
+    - ${calc_report.report_metrics_fn}
+    

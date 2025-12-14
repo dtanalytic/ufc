@@ -1,6 +1,9 @@
 import pandas as pd
 
-def get_stat_feat(df, aggs, cust_aggs, cols, min_per_num, rol_window_size):
+def last_el(x):
+    return x.iloc[-1]
+    
+def get_stat_feat(df, aggs, cust_aggs, cols, min_per_num, rol_window_size, n_shift=1):
 
     rol_df = df.rolling(min_periods=min_per_num, window=rol_window_size).agg({it:aggs for it in cols})
     rol_df.columns = rol_df.columns.map(lambda x: f'{x[0]}_rol_{x[1]}')
@@ -24,5 +27,5 @@ def get_stat_feat(df, aggs, cust_aggs, cols, min_per_num, rol_window_size):
 
     exp_cust_df = pd.concat(exp_cust_df_l, axis=1)
 
-    return pd.concat([rol_df, exp_df, rol_cust_df, exp_cust_df], axis=1).shift(1)
+    return pd.concat([rol_df, exp_df, rol_cust_df, exp_cust_df], axis=1).shift(n_shift)
 

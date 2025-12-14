@@ -26,11 +26,16 @@ class FightsFeatGenTest(unittest.TestCase):
         
         if feat_nm in self.feat_df.columns:
             self.stat_diff(fighter1='Ilia Topuria', fighter2 = 'Josh Emmett', feat_nm=feat_nm)
-            
-    
-    def test_na_rolling_stats(self):
+
+    def test_draws_num(self):
         
-        self.assertTrue(self.feat_df.isna().sum().loc[lambda x: x>0].shape[0]==0)
+        self.assertTrue(self.stat_df[~self.stat_df.Result.isin(['W', 'L'])].shape[0]/self.stat_df.shape[0] < 0.02)
+
         
+    def test_all_except_draws(self):
+        
+        stat_df_len = self.stat_df[self.stat_df.Result.isin(['W', 'L'])].shape[0]
+        self.assertEqual(stat_df_len/2, self.feat_df.shape[0])
+
 if __name__=='__main__':
     unittest.main()

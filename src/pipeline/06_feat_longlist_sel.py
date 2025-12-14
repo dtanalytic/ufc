@@ -10,6 +10,7 @@ import time
 import click
 
 import phik
+import joblib
 
 from functools import partial
 from fastcore.basics import chunked
@@ -38,7 +39,7 @@ def main():
         feat_df = pd.read_csv(conf['split_data']['feat_full_fn'])
         # feat_df = feat_df.assign(event_date=pd.to_datetime(feat_df['event_date'], format='%Y-%m-%d'))
 
-        nfeat_cols = ['fighter', 'opponent', 'event_date', 'target', 'split']
+        nfeat_cols = ['event', 'fighter', 'opponent', 'event_day', 'target', 'split']
         feat_cols = [it for it in feat_df.columns if not it in nfeat_cols]
 
         train_df = feat_df.query('split=="tr"')
@@ -51,7 +52,7 @@ def main():
             res_l = parallel(calc_pair_phik, feat_cols_chunks, df=train_df, target_nm='target', n_workers=os.cpu_count())
             
             ser = pd.Series(dict(chain(*[item.items() for item in res_l]))).sort_values(ascending=False)
-            ser.to_frame().to_csv(conf['feat_longlist_sel']['sign_feat_long_fn'], index=True)
+            ser.to_frame().to_csv(conf['feat_longlist_sel']['sign_feat_long_all_fn'], index=True)
             
             assert conf['feat_longlist_sel']['thresh'] or conf['feat_longlist_sel']['topn_feats'], 'use thresh or topn_feats'
             
@@ -59,7 +60,9 @@ def main():
                 fin_feats = ser.head(conf['feat_longlist_sel']['topn_feats']).index.tolist()
             elif conf['feat_longlist_sel']['thresh']:
                 fin_feats = ser.loc[lambda x: x>=conf['feat_longlist_sel']['thresh']].index.tolist()
-                
+            
+            joblib.dump(fin_feats, conf['feat_longlist_sel']['sign_feat_long_fn'])
+            
         end = time.time()
         
         logger.info(f'Отбор по длинному списку занял {(end-start)/60:.1f} минут')

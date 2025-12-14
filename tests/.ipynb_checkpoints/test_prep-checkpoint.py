@@ -6,7 +6,7 @@ import pandas as pd
 class PrepTest(unittest.TestCase):
     
     conf = YAML().load(open('params.yaml'))
-    prep_df = pd.read_csv(conf['preprocess']['prep_fn'])
+    prep_df = pd.read_csv(conf['preprocess']['prep_fights_fn'])
     
     def test_judge(self):
         # парсинг конкретного судьи
