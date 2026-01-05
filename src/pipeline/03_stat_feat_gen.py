@@ -61,8 +61,17 @@ def main():
                                                         rol_window_size=conf['stat_feat_gen']['rol_window_size'], n_shift=n_shift))
         
         visible_get_stat_feat_chunk = partial(get_stat_feat_chunk, fn=get_stat_feat, aggs=aggs, cust_aggs=cust_aggs, stat_cols=stat_cols, n_shift=1, conf=conf)
-        fights_stat_df = fights_df.groupby('chunk').parallel_apply(visible_get_stat_feat_chunk)
 
+        if os.cpu_count()==1:
+            t_dfs = []
+            for ch, gr in fights_df.groupby('chunk'):
+                t_dfs.append(visible_get_stat_feat_chunk(gr).assign(chunk=ch).reset_index().set_index(['chunk', 'Fighter', 'level_1']))
+        
+            fights_stat_df = pd.concat(t_dfs, ignore_index=False)
+        
+        else:
+            fights_stat_df = fights_df.groupby('chunk').parallel_apply(visible_get_stat_feat_chunk)
+            
 
         fights0_df = fights_df[['Fighter', 'event_date', 'chunk']].copy()
 
@@ -73,8 +82,17 @@ def main():
         
         # visible_get_stat_feat_chunk = partial(get_stat_feat_chunk, fn=get_stat_feat, aggs=aggs, cust_aggs=cust_aggs+[('last', last_el)], stat_cols=['days_nofight_stat'], n_shift=0, conf=conf)
         visible_get_stat_feat_chunk = partial(get_stat_feat_chunk, fn=get_stat_feat, aggs=aggs, cust_aggs=cust_aggs, stat_cols=['days_nofight_stat'], n_shift=0, conf=conf)
+
+        if os.cpu_count()==1:
+            t_dfs = []
+            for ch, gr in fights0_df.groupby('chunk'):
+                t_dfs.append(visible_get_stat_feat_chunk(gr).assign(chunk=ch).reset_index().set_index(['chunk', 'Fighter', 'level_1']))
         
-        fights_stat0_df = fights0_df.groupby('chunk').parallel_apply(visible_get_stat_feat_chunk)
+            fights_stat0_df = pd.concat(t_dfs, ignore_index=False)
+        
+        else:
+            fights_stat0_df = fights0_df.groupby('chunk').parallel_apply(visible_get_stat_feat_chunk)
+        
         
         # fights_stat0_df = fights_stat0_df.assign(days_nofight_stat_custom=lambda x: x['days_nofight_stat_rol_last'])\
         #                                     .drop(columns=['days_nofight_stat_rol_last', 'days_nofight_stat_exp_last'])
