@@ -79,11 +79,11 @@ def main():
 
         
         feat_df['target'] = np.where(feat_df['result']=='W',1,0)
-        
-        feat_df = feat_df.assign(fighters = feat_df.apply(lambda x: ' '.join(sorted([x['fighter'], x['opponent']])) , axis=1))
-        
-        
-        feat_df = feat_df.drop_duplicates(subset=['fighters', 'event_day'])
+
+        # удаление дублей комментим, так как нам важно, что каждый бой с несимметричными признаками оценивался правильно
+        # прогноз будем строить, как среднее арифметиеское 2 прогнозов с признаками относительно одного бойца выигрыша, и относительно проигрыша другого
+        # feat_df = feat_df.assign(fighters = feat_df.apply(lambda x: ' '.join(sorted([x['fighter'], x['opponent']])) , axis=1))
+        # feat_df = feat_df.drop_duplicates(subset=['fighters', 'event_day'])
         
         feat_df = feat_df[['event', 'fighter', 'opponent', 'event_day', 'target']+[it for it in feat_df.columns if '_feat' in it]]
 

@@ -34,11 +34,18 @@ def get_features_event(ev_nm, fights_fn, fighters_fn, coef_fn, vocab_fn, ufc_ran
 
     vocab_df = pd.read_csv(vocab_fn)
 
+    # создаем копии для "двойного" предикта
+    pred_df = pd.concat([pred_df,
+pred_df.rename(columns={'fighter1':'fi2', 'fighter2':'fi1', 'coef1':'co2', 'coef2':'co1'})\
+        .rename(columns={'fi2':'fighter2', 'fi1':'fighter1', 'co2':'coef2', 'co1':'coef1'})], ignore_index=True)
+
+    
     pred_df = pred_df.merge(vocab_df[['name_rus','fighters_name', 'fights_name', 'ranks_name']].rename(columns={**{'name_rus':'fighter1'}, **{it:f'{it}1' for it in ['fighters_name', 'fights_name', 'ranks_name']}})
                             , on='fighter1', how='left')\
             .merge(vocab_df[['name_rus','fighters_name', 'fights_name', 'ranks_name']].rename(columns={**{'name_rus':'fighter2'}, **{it:f'{it}2' for it in ['fighters_name', 'fights_name', 'ranks_name']}}), on='fighter2', how='left')
     
     pred_df = pred_df.assign(event_day=pd.to_datetime(pred_df['event_day'], format='%Y-%m-%d').dt.to_period(freq='D'))
+
 
     # ----------
     # подгружаем ранги с датой <= событию и максимальной из оставшихся
@@ -83,7 +90,8 @@ def get_features_event(ev_nm, fights_fn, fighters_fn, coef_fn, vocab_fn, ufc_ran
 
     # ------------------
     # поединки загружаем
-    fighters_in = pd.concat([pred_df[['fights_name1']].rename(columns={'fights_name1':'name'}), pred_df[['fights_name2']].rename(columns={'fights_name2':'name'})]).dropna()['name'].tolist()
+    fighters_in = pd.concat([pred_df[['fights_name1']].rename(columns={'fights_name1':'name'}), 
+                         pred_df[['fights_name2']].rename(columns={'fights_name2':'name'})]).dropna()['name'].drop_duplicates().tolist()
     
     fights_df = prep_strikes_fn(fights_in_fn=fights_fn, fighters=fighters_in)
     fights_df = fights_df[fights_df['event_date']<event_date-1]

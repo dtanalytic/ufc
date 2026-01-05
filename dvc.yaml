@@ -50,51 +50,62 @@ stages:
     - split_data.ohe_fn
     outs:
     - ${split_data.feat_full_fn}
+  feat_filter_rules:
+    cmd: python src/pipeline/06_feat_filter_rules.py
+    deps:
+    - src/pipeline/06_feat_filter_rules.py
+    - ${split_data.feat_full_fn}
+    params:  
+    - feat_filter_rules.drop_highpsi_thresh
+    outs:
+    - ${feat_filter_rules.feat_fn}
   feat_longlist_sel:
-    cmd: python src/pipeline/06_feat_longlist_sel.py
+    cmd: python src/pipeline/07_feat_longlist_sel.py
     params:
     - feat_longlist_sel.method
     - feat_longlist_sel.thresh
     - feat_longlist_sel.topn_feats
     deps:
+    - ${feat_filter_rules.feat_fn}
     - ${split_data.feat_full_fn}
-    - src/pipeline/06_feat_longlist_sel.py
+    - src/pipeline/07_feat_longlist_sel.py
     outs:
     - ${feat_longlist_sel.feat_long_fn}
     - ${feat_longlist_sel.sign_feat_long_all_fn}
     - ${feat_longlist_sel.sign_feat_long_fn}
   feat_shortlist_sel:
-    cmd: python src/pipeline/07_feat_shortlist_sel.py
+    cmd: python src/pipeline/08_feat_shortlist_sel.py
     params:
     - feat_shortlist_sel.quantile_clip
     deps:
     - ${feat_longlist_sel.feat_long_fn}
-    - src/pipeline/07_feat_shortlist_sel.py
+    - src/pipeline/08_feat_shortlist_sel.py
     outs:
     - ${feat_shortlist_sel.sign_feat_short_all_fn}
     - ${feat_shortlist_sel.sign_feat_short_fn}
     - ${feat_shortlist_sel.feat_anom_fn}
     - ${feat_shortlist_sel.feat_short_fn}
   train_eval:
-    cmd: python src/pipeline/08_train_eval.py
+    cmd: python src/pipeline/09_train_eval.py
     params:
     - train_eval.model
     - seed
     deps:
     - ${feat_shortlist_sel.feat_short_fn}
-    - src/pipeline/08_train_eval.py
+    - src/pipeline/09_train_eval.py
     outs:
     - ${train_eval.model_fn}
     - ${train_eval.score_df_fn}
     metrics:
     - ${train_eval.eval_fn}
   calc_report:
-    cmd: python src/pipeline/09_calc_report.py
+    cmd: python src/pipeline/10_calc_report.py
     params:
     - calc_report.alpha
     deps:
     - ${train_eval.model_fn}
-    - src/pipeline/09_calc_report.py
+    - ${train_eval.score_df_fn}
+    - src/pipeline/10_calc_report.py
     metrics:
     - ${calc_report.report_metrics_fn}
     
