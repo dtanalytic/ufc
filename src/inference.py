@@ -34,10 +34,10 @@ def get_features_event(ev_nm, fights_fn, fighters_fn, coef_fn, vocab_fn, ufc_ran
 
     vocab_df = pd.read_csv(vocab_fn)
 
-    # создаем копии для "двойного" предикта
-    pred_df = pd.concat([pred_df,
-pred_df.rename(columns={'fighter1':'fi2', 'fighter2':'fi1', 'coef1':'co2', 'coef2':'co1'})\
-        .rename(columns={'fi2':'fighter2', 'fi1':'fighter1', 'co2':'coef2', 'co1':'coef1'})], ignore_index=True)
+#     # создаем копии для "двойного" предикта
+#     pred_df = pd.concat([pred_df,
+# pred_df.rename(columns={'fighter1':'fi2', 'fighter2':'fi1', 'coef1':'co2', 'coef2':'co1'})\
+#         .rename(columns={'fi2':'fighter2', 'fi1':'fighter1', 'co2':'coef2', 'co1':'coef1'})], ignore_index=True)
 
     
     pred_df = pred_df.merge(vocab_df[['name_rus','fighters_name', 'fights_name', 'ranks_name']].rename(columns={**{'name_rus':'fighter1'}, **{it:f'{it}1' for it in ['fighters_name', 'fights_name', 'ranks_name']}})
@@ -151,15 +151,31 @@ pred_df.rename(columns={'fighter1':'fi2', 'fighter2':'fi1', 'coef1':'co2', 'coef
     # ---------------
     # формируем признаки боев
     ind_cols = ['name', 'fighter', 'opponent', 'event_day', 'coef1', 'coef2']
-    df1 = pred_df.merge(stat_df, how='left', left_on='fighters_name1', right_on='full_name')\
+    
+    df11 = pred_df.merge(stat_df, how='left', left_on='fighters_name1', right_on='full_name')\
+        .rename(columns={'fighters_name1':'fighter', 'fighters_name2':'opponent'})[ind_cols+feat_cols]\
+        .set_index(ind_cols)
+
+    df12 = pred_df.merge(stat_df, how='left', left_on='fighters_name2', right_on='full_name')\
             .rename(columns={'fighters_name1':'fighter', 'fighters_name2':'opponent'})[ind_cols+feat_cols]\
             .set_index(ind_cols)
     
-    df2 = pred_df.merge(stat_df, how='left', left_on='fighters_name2', right_on='full_name')\
-            .rename(columns={'fighters_name1':'fighter', 'fighters_name2':'opponent'})[ind_cols+feat_cols]\
+    df21 = pred_df.merge(stat_df, how='left', left_on='fighters_name2', right_on='full_name')\
+            .rename(columns={'fighters_name2':'fighter', 'fighters_name1':'opponent', 'coef1':'c1', 'coef2':'c2'})\
+            .rename(columns={'c1':'coef2', 'c2':'coef1'})\
+            [ind_cols+feat_cols]\
             .set_index(ind_cols)
     
-    pred_fightes_df = (df1 - df2).dropna()
+    df22 = pred_df.merge(stat_df, how='left', left_on='fighters_name1', right_on='full_name')\
+            .rename(columns={'fighters_name2':'fighter', 'fighters_name1':'opponent', 'coef1':'c1', 'coef2':'c2'})\
+            .rename(columns={'c1':'coef2', 'c2':'coef1'})\
+            [ind_cols+feat_cols]\
+            .set_index(ind_cols)
+    
+    
+    
+    pred_fightes_df = pd.concat([(df11 - df12).dropna(),(df21 - df22).dropna()] )
+
     
     pred_fightes_df = pred_fightes_df.reset_index().merge(fights_stat0_df.reset_index(names='fighter')[['fighter', 'days_nofight_stat']], on='fighter', how='left')\
                     .rename(columns={'days_nofight_stat':'fighter_days_nofight_custom'})\
@@ -207,13 +223,19 @@ pred_df.rename(columns={'fighter1':'fi2', 'fighter2':'fi1', 'coef1':'co2', 'coef
                      index=pred_fightes_df.index, columns=ohe.get_feature_names_out()),
         left_index=True, right_index=True).rename(columns={'name':'event'})
 
+
+    # признак левого угла добавляем для "двойников"
+    pred_fightes_df = pred_fightes_df.assign(fighters = pred_fightes_df.apply(lambda x: ' '.join(sorted([x['fighter'], x['opponent']])) , axis=1))
+    pred_fightes_df = pred_fightes_df.merge(pred_fightes_df[['fighters', 'fighter','left_corner_custom_feat']].rename(columns={'left_corner_custom_feat':'lc', 'fighter':'fi'}), on='fighters', how='left')\
+                    .loc[lambda x: x['fighter']!=x['fi']]
+    pred_fightes_df['left_corner_custom_feat'] = pred_fightes_df['left_corner_custom_feat'].mask(
+    pred_fightes_df['left_corner_custom_feat'].isna(), 1-pred_fightes_df['lc'])
+    pred_fightes_df = pred_fightes_df.drop(columns=['fighters', 'fi', 'lc'])
+
     
     return pred_fightes_df
     
 def place_bet(placebet_df, strategy_selection, alpha):
-
-    if not strategy_selection:
-        strategy_selection=pd.Series([True]*len(placebet_df), index=placebet_df.index)
         
     df = placebet_df.copy()
     # переводим коэффициенты в вероятности с учетом излишка на маржу букмекера
