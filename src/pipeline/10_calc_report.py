@@ -55,8 +55,8 @@ def main():
         # income by time
         # income_time_df, income_res_l = calc_time_profit(placebet_df=feat_df, strategy_selection=None, alpha=conf['calc_report']['alpha'])
 
-        income_time_val_df, income_res_val_l = calc_time_profit(placebet_df=feat_df.query('split=="val"'), strategy_selection=None, alpha=conf['calc_report']['alpha'])
-        income_time_ts_df, income_res_ts_l = calc_time_profit(placebet_df=feat_df.query('split=="ts"'), strategy_selection=None, alpha=conf['calc_report']['alpha'])
+        income_time_val_df, income_res_val_l = calc_time_profit(placebet_df=feat_df.query('split=="val"'), strategy_selection=pd.Series([]), alpha=conf['calc_report']['alpha'])
+        income_time_ts_df, income_res_ts_l = calc_time_profit(placebet_df=feat_df.query('split=="ts"'), strategy_selection=pd.Series([]), alpha=conf['calc_report']['alpha'])
 
         
         income_time_val_df.to_csv(f'{DN}/income_time_val_df.csv', index=False)
@@ -78,7 +78,7 @@ def main():
         plt.tight_layout()
         plt.savefig(f'{DN}/income_time_ts.png')
         
-        income, df = calc_profit(placebet_df=feat_df, strategy_selection=None, alpha=conf['calc_report']['alpha'])
+        income, df = calc_profit(placebet_df=feat_df, strategy_selection=pd.Series([]), alpha=conf['calc_report']['alpha'])
         
         # метрики дохода записываем
         d = {'income_time_val_mean':income_time_val_df['income'].mean(), 'income_time_ts_mean':income_time_ts_df['income'].mean(), 'income_all': income}

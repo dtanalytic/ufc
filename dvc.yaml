@@ -106,6 +106,7 @@ stages:
     - ${train_eval.model_fn}
     - ${train_eval.score_df_fn}
     - src/pipeline/10_calc_report.py
+    - src/inference.py
     metrics:
     - ${calc_report.report_metrics_fn}
     

@@ -234,10 +234,9 @@ def get_features_event(ev_nm, fights_fn, fighters_fn, coef_fn, vocab_fn, ufc_ran
 
     
     return pred_fightes_df
-    
-def place_bet(placebet_df, strategy_selection, alpha):
-        
-    df = placebet_df.copy()
+
+def add_bet_info_cols(df):
+
     # переводим коэффициенты в вероятности с учетом излишка на маржу букмекера
     df['proba1'] = 1/df['coef1']
     df['proba2'] = 1/df['coef2']
@@ -256,8 +255,17 @@ def place_bet(placebet_df, strategy_selection, alpha):
     # среди недооцененных букмекером ищем те, где алгоритм предсказал победу недооцененного бойца
     # это лучшая ставка
     # alpha*x - на бои с proba > 0.5, (1-alpha)*x на бои с proba<0.5; x=1, alpha=0.7
-    df['betwin'] = df['score1'].mask(df['selector']==2, df['score2'])>0.5
+    df['score'] = df['score1'].mask(df['selector']==2, df['score2'])
+    df['betwin'] = df['score']>0.5
 
+    return df
+    
+def place_bet(placebet_df, strategy_selection=pd.Series([]), alpha=1):
+
+    if len(strategy_selection)==0:
+        strategy_selection = pd.Series([True]*len(placebet_df), index=placebet_df.index)
+    df = add_bet_info_cols(placebet_df.copy())
+    # import pdb;pdb.set_trace()
     alpha_sel = df['betwin'] & strategy_selection
     # приграничные случаи для alpha
     if alpha_sel.sum()==0:
@@ -270,8 +278,10 @@ def place_bet(placebet_df, strategy_selection, alpha):
     # на остальных недооцененных распределяем 1-alpha денег
     df.loc[(~df['betwin']) & strategy_selection, 'bet'] = (df.loc[(~df['betwin']) & strategy_selection, 'diff'].abs()/df.loc[(~df['betwin'])&strategy_selection, 'diff'].abs().sum()).map(lambda x: x*(1-alpha))
 
+    # df['bet'] = df['bet'].fillna(0)
     return df
- 
+
+
 def calc_profit(placebet_df, strategy_selection, alpha):
     '''
     Args:
@@ -286,11 +296,13 @@ def calc_profit(placebet_df, strategy_selection, alpha):
     Example:
     '''
     bet_df = place_bet(placebet_df, strategy_selection = strategy_selection, alpha=alpha)
-    # target==1 и selector==1, выиграл левый и на него ставили, target==0 и selector==2, выиграл правый и на него ставили, 
-    bet_df['income'] = np.where((bet_df['target']+bet_df['selector']).map(lambda x: x==2), 
-                               bet_df['bet']*bet_df['coef1'].mask(bet_df['selector']==2, bet_df['coef2']), 0)
     
-    return bet_df['income'].sum(), bet_df
+    # target==1 и selector==1, выиграл левый и на него ставили, target==0 и selector==2, выиграл правый и на него ставили, 
+
+    bet_df['income'] = np.where((bet_df['target']+bet_df['selector']).map(lambda x: x==2), 
+                               bet_df['bet']*bet_df['coef1'].mask(bet_df['selector']==2, bet_df['coef2']), np.where(bet_df['bet'].isna(), np.nan, 0))
+    
+    return bet_df['income'].sum() if bet_df['income'].isna().mean()<1 else np.nan, bet_df
 
 
 def calc_time_profit(placebet_df, strategy_selection, alpha):
@@ -303,8 +315,8 @@ def calc_time_profit(placebet_df, strategy_selection, alpha):
     res_l = []
     for event_day in placebet_df.event_day.unique():
         sel = (placebet_df.event_day==event_day)
-        t_df = placebet_df.loc[sel]#.reset_index(drop=True)
-        income, df = calc_profit(placebet_df=t_df, strategy_selection=strategy_selection, alpha=alpha)
+        t_df = placebet_df.loc[sel]
+        income, df = calc_profit(placebet_df=t_df, strategy_selection=strategy_selection[sel], alpha=alpha)
         res_l.append((event_day, t_df.shape[0], income, df))
     
     income_time_df = pd.DataFrame([(it[0], it[1], it[2]) for it in res_l], columns=['event_day', 'bet_num', 'income'])
