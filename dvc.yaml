@@ -102,6 +102,9 @@ stages:
     cmd: python src/pipeline/10_calc_report.py
     params:
     - calc_report.alpha
+    - calc_report.strategy
+    - calc_report.score_q
+    - calc_report.diff_q
     deps:
     - ${train_eval.model_fn}
     - ${train_eval.score_df_fn}

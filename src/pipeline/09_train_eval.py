@@ -46,18 +46,21 @@ def main():
         # model = GaussianNB()
         if conf['train_eval']['model']=='logreg':
             # model = LogisticRegression(random_state=conf['seed'])
-            model = Pipeline(steps=[('sc', RobustScaler()), ('clf', LogisticRegression(solver='liblinear', random_state=conf['seed']))])
+            base_model = Pipeline(steps=[('sc', RobustScaler()), ('clf', LogisticRegression(solver='liblinear', random_state=conf['seed']))])
 
         elif conf['train_eval']['model']=='dummy':
-            model = DummyClassifier(strategy='prior', random_state=conf['seed'])
+            base_model = DummyClassifier(strategy='prior', random_state=conf['seed'])
 
+
+        # base_model.fit(df.loc[df.split=='tr', feats], df.loc[df.split=='tr', 'target'])
         
         # калибруем
-        model = CalibratedClassifierCV(estimator=model, method='sigmoid', cv=5, n_jobs=-1, ensemble=False)
+        model = CalibratedClassifierCV(estimator=base_model, method='sigmoid', cv=5, n_jobs=-1, ensemble=False)
         model.fit(df.loc[df.split=='tr', feats], df.loc[df.split=='tr', 'target'])
         
         joblib.dump(model, conf['train_eval']['model_fn'])
-
+        # pd.DataFrame({'coef':feat_cols, 'val':model.calibrated_classifiers_[0].estimator.named_steps['clf'].coef_[0]})
+        
         df = df.assign(fighters = df.apply(lambda x: ' '.join(sorted([x['fighter'], x['opponent']])) , axis=1))
         # метрики сохраняем
         df['score1'] = model.predict_proba(df[feats])[:, 1]

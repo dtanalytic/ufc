@@ -45,8 +45,11 @@ train_eval:
     eval_fn: data/out/report/eval_m.json
     score_df_fn: data/out/score_df.csv
 calc_report:
-    report_metrics_fn: data/out/report/report_m.json
     alpha: 1
+    strategy: score_diff # all, score_diff
+    score_q: 0.8 # если любые по скору подходят тут можно 0 поставить
+    diff_q: 0.8 # если любые по разрыву с коэффициентом подходят тут можно 0 поставить
+    report_metrics_fn: data/out/report/report_m.json
 inference:
     fighters_fn: data/inference/fighters_stat_df.csv
     rankings_fn: data/inference/rank_df.csv

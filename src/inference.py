@@ -278,7 +278,6 @@ def place_bet(placebet_df, strategy_selection=pd.Series([]), alpha=1):
     # на остальных недооцененных распределяем 1-alpha денег
     df.loc[(~df['betwin']) & strategy_selection, 'bet'] = (df.loc[(~df['betwin']) & strategy_selection, 'diff'].abs()/df.loc[(~df['betwin'])&strategy_selection, 'diff'].abs().sum()).map(lambda x: x*(1-alpha))
 
-    # df['bet'] = df['bet'].fillna(0)
     return df
 
 
