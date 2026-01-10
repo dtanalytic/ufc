@@ -92,7 +92,7 @@ def main():
             res_df = res_df.sum(axis=0).sort_values(ascending=False)
             res_df.to_frame('feat').to_csv(conf['feat_shortlist_sel']['sign_feat_short_all_fn'])
 
-            feats = res_df.loc[lambda x: x>=4].index.tolist()
+            feats = res_df.loc[lambda x: x>=1].index.tolist()
             
             logger.info(f"Итоговые признаки - {feats}")
 

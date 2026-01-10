@@ -25,14 +25,14 @@ feat_filter_rules:
     feat_fn: data/interim/feat_filter_rules.pkl
 feat_longlist_sel:
     method: 'phik' # 'phik'
-    thresh: 0.07 # if empty saves
-    topn_feats: 30 # if is not empty thresh is not used
+    thresh: 0.02 # if empty saves
+    topn_feats:  # if is not empty thresh is not used
     sign_feat_long_all_fn: data/interim/sign_feat_long_all.csv 
     sign_feat_long_fn: data/interim/sign_feat_long.pkl
     feat_long_fn: data/interim/feat_long_df.csv
 feat_shortlist_sel:
     method: 's' # 'b', 'f', 's'
-    thresh: 0.01
+    thresh: 0.001
     quantile_clip: 0.001 # sum percents from lower and upper clip
     sign_feat_short_all_fn: data/interim/sign_feat_short_all.csv
     sign_feat_short_fn: data/interim/sign_feat_short.pkl
@@ -46,7 +46,7 @@ train_eval:
     score_df_fn: data/out/score_df.csv
 calc_report:
     alpha: 1
-    strategy: score_diff # all, score_diff
+    strategy: all # all, score_diff
     score_q: 0.8 # если любые по скору подходят тут можно 0 поставить
     diff_q: 0.8 # если любые по разрыву с коэффициентом подходят тут можно 0 поставить
     report_metrics_fn: data/out/report/report_m.json
