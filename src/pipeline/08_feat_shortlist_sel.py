@@ -31,7 +31,7 @@ def main():
 
         logger = ActivityLogger().get_logger(__file__)
         conf = YAML().load(open('params.yaml'))
-
+        SEED=conf['seed']
         feat_df = pd.read_csv(conf['feat_longlist_sel']['feat_long_fn'])
         feat_cols = joblib.load(conf['feat_longlist_sel']['sign_feat_long_fn'])
         
@@ -61,20 +61,20 @@ def main():
             feat_bayes = selector.feat_ar[selector.mask]
             bayes_qual = selector.sc_pr
             
-            selector = BFS2Thres(Pipeline(steps=[('sc', RobustScaler()), ('clf', LogisticRegression(max_iter=maxiter))]), scoring='roc_auc', cv = fake_split(feat_df), thresh = conf['feat_shortlist_sel']['thresh'], direction=conf['feat_shortlist_sel']['method'])
+            selector = BFS2Thres(Pipeline(steps=[('sc', RobustScaler()), ('clf', LogisticRegression(max_iter=maxiter, random_state=SEED))]), scoring='roc_auc', cv = fake_split(feat_df), thresh = conf['feat_shortlist_sel']['thresh'], direction=conf['feat_shortlist_sel']['method'])
             selector.fit(feat_df.drop(columns=nfeat_cols), feat_df['target'], verbose=False)
              
             feat_logreg = selector.feat_ar[selector.mask]
             
             logreg_qual = selector.sc_pr
             
-            selector = BFS2Thres(HistGradientBoostingClassifier(), scoring='roc_auc', cv = fake_split(feat_df), thresh = conf['feat_shortlist_sel']['thresh'], direction=conf['feat_shortlist_sel']['method'])
+            selector = BFS2Thres(HistGradientBoostingClassifier(random_state=SEED), scoring='roc_auc', cv = fake_split(feat_df), thresh = conf['feat_shortlist_sel']['thresh'], direction=conf['feat_shortlist_sel']['method'])
             selector.fit(feat_df.drop(columns=nfeat_cols), feat_df['target'], verbose=False)
              
             feat_boost = selector.feat_ar[selector.mask]
             boost_qual = selector.sc_pr
             
-            selector = BFS2Thres(Pipeline(steps=[('sc', RobustScaler()), ('clf', LinearSVC(max_iter=maxiter*10))]), scoring='roc_auc', cv = fake_split(feat_df), thresh = conf['feat_shortlist_sel']['thresh'], direction=conf['feat_shortlist_sel']['method'])
+            selector = BFS2Thres(Pipeline(steps=[('sc', RobustScaler()), ('clf', LinearSVC(max_iter=maxiter*10, random_state=SEED))]), scoring='roc_auc', cv = fake_split(feat_df), thresh = conf['feat_shortlist_sel']['thresh'], direction=conf['feat_shortlist_sel']['method'])
 
             selector.fit(feat_df.drop(columns=nfeat_cols), feat_df['target'], verbose=False)
              
@@ -93,7 +93,7 @@ def main():
             res_df.to_frame('feat').to_csv(conf['feat_shortlist_sel']['sign_feat_short_all_fn'])
 
             feats = res_df.loc[lambda x: x>=1].index.tolist()
-            
+             
             logger.info(f"Итоговые признаки - {feats}")
 
             joblib.dump(feats, conf['feat_shortlist_sel']['sign_feat_short_fn'])

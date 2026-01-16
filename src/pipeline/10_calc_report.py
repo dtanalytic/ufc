@@ -17,7 +17,7 @@ sns.set()
 import sys
 sys.path.append('.')
 from src.constants import ActivityLogger
-from src.inference import place_bet, calc_profit, calc_time_profit
+from src.inference import calc_profit, calc_time_profit
 from src.inference import add_bet_info_cols
 
 
@@ -56,20 +56,20 @@ def main():
         # income by time
         # income_time_df, income_res_l = calc_time_profit(placebet_df=feat_df, strategy_selection=None, alpha=conf['calc_report']['alpha'])
 
-        if conf['calc_report']['strategy']=='all':
+        if conf['calc_report']['strategy_betnum']=='all':
             val_sel=pd.Series([])
             ts_sel=pd.Series([])
             all_sel=pd.Series([])
-        elif conf['calc_report']['strategy']=='score_diff':
-            df = add_bet_info_cols(feat_df.copy())
+        elif conf['calc_report']['strategy_betnum']=='score_diff':
+            df = add_bet_info_cols(feat_df.copy(), conf)
             diff_thresh = df.query('split=="val"')['diff'].abs().quantile(conf['calc_report']['diff_q'])            
             score_thresh = df.query('split=="val"')['score1'].quantile(conf['calc_report']['score_q'])
             val_sel = (df.query('split=="val"')['diff'].abs()>diff_thresh)&(df.query('split=="val"')['score']>score_thresh)
             ts_sel = (df.query('split=="ts"')['diff'].abs()>diff_thresh)&(df.query('split=="ts"')['score']>score_thresh)
             all_sel = (df['diff'].abs()>diff_thresh)&(df['score']>score_thresh)
             
-        income_time_val_df, income_res_val_l = calc_time_profit(placebet_df=feat_df.query('split=="val"'), strategy_selection=val_sel, alpha=conf['calc_report']['alpha'])
-        income_time_ts_df, income_res_ts_l = calc_time_profit(placebet_df=feat_df.query('split=="ts"'), strategy_selection=ts_sel, alpha=conf['calc_report']['alpha'])
+        income_time_val_df, income_res_val_l = calc_time_profit(placebet_df=feat_df.query('split=="val"'), strategy_selection=val_sel, conf=conf)
+        income_time_ts_df, income_res_ts_l = calc_time_profit(placebet_df=feat_df.query('split=="ts"'), strategy_selection=ts_sel, conf=conf)
         
         income_time_val_df.to_csv(f'{DN}/income_time_val_df.csv', index=False)
         joblib.dump(income_res_val_l, f'{DN}/income_res_val_l.pkl')
@@ -90,7 +90,7 @@ def main():
         plt.tight_layout()
         plt.savefig(f'{DN}/income_time_ts.png')
 
-        income, df = calc_profit(placebet_df=feat_df, strategy_selection=all_sel, alpha=conf['calc_report']['alpha'])
+        income, df = calc_profit(placebet_df=feat_df, strategy_selection=all_sel, conf=conf)
         
         # метрики дохода записываем
         d = {'income_time_val_mean':income_time_val_df['income'].mean(), 'income_time_ts_mean':income_time_ts_df['income'].mean(), 'income_all': income}

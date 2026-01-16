@@ -21,6 +21,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.dummy import DummyClassifier
 from sklearn.metrics import roc_auc_score, average_precision_score
 from sklearn.calibration import CalibratedClassifierCV, CalibrationDisplay
+from sklearn.svm import LinearSVC
 
 import sys
 sys.path.append('.')
@@ -45,8 +46,10 @@ def main():
 
         # model = GaussianNB()
         if conf['train_eval']['model']=='logreg':
-            # model = LogisticRegression(random_state=conf['seed'])
-            base_model = Pipeline(steps=[('sc', RobustScaler()), ('clf', LogisticRegression(solver='liblinear', random_state=conf['seed']))])
+            
+            # base_model = Pipeline(steps=[('sc', RobustScaler()), ('clf', LogisticRegression(solver='liblinear', random_state=conf['seed']))])
+
+            base_model = Pipeline(steps=[('sc', RobustScaler()), ('clf', LinearSVC(max_iter=10000, random_state=conf['seed'], penalty='l2', C=14))])
 
         elif conf['train_eval']['model']=='dummy':
             base_model = DummyClassifier(strategy='prior', random_state=conf['seed'])

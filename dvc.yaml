@@ -102,7 +102,8 @@ stages:
     cmd: python src/pipeline/10_calc_report.py
     params:
     - calc_report.alpha
-    - calc_report.strategy
+    - calc_report.strategy_betnum
+    - calc_report.strategy_income
     - calc_report.score_q
     - calc_report.diff_q
     deps:

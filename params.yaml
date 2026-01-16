@@ -25,7 +25,7 @@ feat_filter_rules:
     feat_fn: data/interim/feat_filter_rules.pkl
 feat_longlist_sel:
     method: 'phik' # 'phik'
-    thresh: 0.02 # if empty saves
+    thresh: 0.01 # if empty saves
     topn_feats:  # if is not empty thresh is not used
     sign_feat_long_all_fn: data/interim/sign_feat_long_all.csv 
     sign_feat_long_fn: data/interim/sign_feat_long.pkl
@@ -46,9 +46,10 @@ train_eval:
     score_df_fn: data/out/score_df.csv
 calc_report:
     alpha: 1
-    strategy: all # all, score_diff
-    score_q: 0.8 # если любые по скору подходят тут можно 0 поставить
-    diff_q: 0.8 # если любые по разрыву с коэффициентом подходят тут можно 0 поставить
+    strategy_income: 'diff' # diff kelly
+    strategy_betnum: score_diff # all, score_diff
+    score_q: 0.7 # если любые по скору подходят тут можно 0 поставить
+    diff_q: 0.1 # если любые по разрыву с коэффициентом подходят тут можно 0 поставить
     report_metrics_fn: data/out/report/report_m.json
 inference:
     fighters_fn: data/inference/fighters_stat_df.csv
