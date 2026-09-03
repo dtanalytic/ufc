@@ -17,8 +17,6 @@ class ModelTest(unittest.TestCase):
 
 
         
-        self.assertTrue(
-        
         
     
 if __name__=='__main__':

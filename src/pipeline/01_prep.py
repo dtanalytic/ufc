@@ -21,20 +21,15 @@ def main():
         conf = YAML().load(open('params.yaml'))
 
         fights_df = prep_strikes_fn(fights_in_fn = conf['preprocess']['source_fights_fn'], fighters=[])
-        fights_df.to_csv(conf['preprocess']['prep_fights_fn'], index=False)
-        
+        fights_df.to_csv(conf['preprocess']['prep_fights_fn'], index=False)     
         logger.info(f'Закончили препроцессинг файлов с боями и бойцами')
 
-        # fighters_df=prep_fighters_fn(fighters_fn=conf['preprocess']['source_fighters_fn'], fighters=[])
         fighters_df = prep_fighters_fn(fighters_fn=conf['preprocess']['source_fighters_fn'], fighters=[]).drop_duplicates(subset='full_name')
-
         fighters_df.to_csv(conf['preprocess']['prep_fighters_fn'], index=False)
         
     
         coef_df = prep_coefs_fn(conf['preprocess']['source_coef_fn'])
         coef_df.to_csv(conf['preprocess']['prep_coef_fn'], index=False)
-        
-
         logger.info(f'Закончили препроцессинг файла со ставками')
 
         ActivityLogger().close_logger(logger)

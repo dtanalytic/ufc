@@ -46,7 +46,7 @@ def main():
                               .rename(columns={'fights_name1':'fighter', 'fights_name2':'opponent'})
                            , on=['fighter', 'opponent'])
         
-        nfeat_cols = ['event', 'fighter', 'opponent', 'event_day', 'target', 'coef1', 'coef2']
+        nfeat_cols = ['event', 'split', 'fighter', 'opponent', 'event_day', 'target', 'coef1', 'coef2', 'score1']
         feat_cols = [it for it in feat_df.columns if not it in nfeat_cols]
         
         feat_df = feat_df[nfeat_cols+feat_cols]
@@ -82,13 +82,36 @@ def main():
         income_time_val_df.set_index('event_day')['income'].sort_index(ascending=False).plot.barh()
         plt.tight_layout()
         plt.savefig(f'{DN}/income_time_val.png')
+        plt.close() 
 
+        plt.figure(figsize=(10, 8))
+        (income_time_val_df.assign(cummean=income_time_val_df['income'].cumsum()/(income_time_val_df['income'].notna()).cumsum())
+        .set_index('event_day')
+         .sort_index(ascending=False)
+         ['cummean']
+         .plot.barh()
+        )
+        plt.tight_layout()
+        plt.savefig(f'{DN}/cummean_income_time_val.png')
+        plt.close()
         
         # график во времени
         plt.figure(figsize=(10, 8))
         income_time_ts_df.set_index('event_day')['income'].sort_index(ascending=False).plot.barh()
         plt.tight_layout()
         plt.savefig(f'{DN}/income_time_ts.png')
+        plt.close()
+
+        plt.figure(figsize=(10, 8))
+        (income_time_ts_df.assign(cummean=income_time_ts_df['income'].cumsum()/(income_time_ts_df['income'].notna()).cumsum())
+        .set_index('event_day')
+         .sort_index(ascending=False)
+         ['cummean']
+         .plot.barh()
+        )
+        plt.tight_layout()
+        plt.savefig(f'{DN}/cummean_income_time_ts.png')
+        plt.close()
 
         income, df = calc_profit(placebet_df=feat_df, strategy_selection=all_sel, conf=conf)
         

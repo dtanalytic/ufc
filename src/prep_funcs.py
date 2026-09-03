@@ -2,6 +2,15 @@ import pandas as pd
 import numpy as np
 import re
 
+def shrink_df(df):
+    sh_df = df.copy()
+    float_cols = df.dtypes.astype(str).loc[lambda x: x.str.contains(pat='float', na=False, regex=True)].index
+    int_cols = df.dtypes.astype(str).loc[lambda x: x.str.contains(pat='int', na=False, regex=True)].index
+    
+    for cols, col_type in zip([float_cols, int_cols], ['float', 'integer']):
+        sh_df[cols] = sh_df[cols].apply(pd.to_numeric, downcast=col_type)
+    return sh_df
+    
 def suf_change(col_names, suf_out, suf_dam):
     cols = []
     for it in col_names:

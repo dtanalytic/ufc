@@ -46,9 +46,9 @@ train_eval:
     score_df_fn: data/out/score_df.csv
 calc_report:
     alpha: 1
-    strategy_income: 'diff' # diff kelly
+    strategy_income: 'kelly' # diff kelly
     strategy_betnum: score_diff # all, score_diff
-    score_q: 0.7 # если любые по скору подходят тут можно 0 поставить
+    score_q: 1 # если любые по скору подходят тут можно 0 поставить
     diff_q: 0.1 # если любые по разрыву с коэффициентом подходят тут можно 0 поставить
     report_metrics_fn: data/out/report/report_m.json
 inference:

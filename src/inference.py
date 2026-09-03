@@ -259,8 +259,13 @@ def add_bet_info_cols(df, conf):
     # if kelly diff recalc
     if conf['calc_report']['strategy_income']=='kelly':
         df['bet_coef'] = df['coef1'].mask(df['selector']==2, df['coef2'])
-        df['diff'] = ((df['bet_coef']-1)*df['score'] - (1-df['score']))/(df['bet_coef']-1)
-
+        # https://bookmaker-ratings.ru/wiki/kriterij-kelli/
+        # https://legalbet.ru/shkola-bettinga/kriterij-kelli-v-stavkah-na-sport-chto-eto-takoe-i-kak-ego-ispolzovat/
+        # формулы разные но моя ожно df['score'] - df['score'] в моей формуле сводит 1 к 2
+        # df['diff'] = ((df['bet_coef']-1)*df['score'] - (1-df['score']))/(df['bet_coef']-1)
+        df['diff'] = (df['bet_coef']*df['score'] - 1)/(df['bet_coef']-1)
+        df['diff'] = df['diff'].mask(df['diff']<0, 0)
+            
     return df
     
 def place_bet(placebet_df, conf, strategy_selection=pd.Series([])):
@@ -284,7 +289,10 @@ def place_bet(placebet_df, conf, strategy_selection=pd.Series([])):
     df.loc[alpha_sel, 'bet'] = (df.loc[alpha_sel, 'diff'].abs()/df.loc[alpha_sel, 'diff'].abs().sum()).map(lambda x: x*alpha)
     # на остальных недооцененных распределяем 1-alpha денег
     df.loc[(~df['betwin']) & strategy_selection, 'bet'] = (df.loc[(~df['betwin']) & strategy_selection, 'diff'].abs()/df.loc[(~df['betwin'])&strategy_selection, 'diff'].abs().sum()).map(lambda x: x*(1-alpha))
-
+    
+    # 0 ставки, когда alpha=0 или alpha=1, х не считает как ставки
+    df['bet'] = df['bet'].replace({0:np.nan})
+    
     return df
 
 

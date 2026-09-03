@@ -15,10 +15,12 @@ sys.path.append('.')
 
 from src.stat_funcs import get_stat_feat, last_el
 from src.constants import ActivityLogger
+from src.prep_funcs import shrink_df
 
 from pandarallel import pandarallel
 
 pandarallel.initialize(progress_bar=False, nb_workers=os.cpu_count())
+
 
 
 @click.command()
@@ -33,6 +35,8 @@ def main():
         conf = YAML().load(open('params.yaml'))
         
         fights_df = pd.read_csv(conf['filter']['filt_fights_fn'])
+        
+        fights_df = shrink_df(fights_df)
         
         fights_df.sort_values(by=['Fighter', 'event_date'], inplace=True)
         # stat_cols = [it for it in fights_df.columns if re.search('_stat', it)]

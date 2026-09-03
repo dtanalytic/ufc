@@ -35,7 +35,7 @@ class FightsFeatGenTest(unittest.TestCase):
     def test_all_except_draws(self):
         
         stat_df_len = self.stat_df[self.stat_df.Result.isin(['W', 'L'])].shape[0]
-        self.assertEqual(stat_df_len/2, self.feat_df.shape[0])
+        self.assertEqual(stat_df_len, self.feat_df.shape[0])
 
 if __name__=='__main__':
     unittest.main()
